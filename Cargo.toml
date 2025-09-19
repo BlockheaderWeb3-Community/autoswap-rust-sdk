@@ -20,5 +20,5 @@ edition = "2024"
 
 [dependencies]
 thiserror = "2.0.16"
-starknet = { git = "https://github.com/xJonathanLEI/starknet-rs", rev = "1fc8b91efd861542ad69b2e3d4b1c38bc350c7de" }
+starknet = "0.17.0"
 serde = {version="1.0.219", features=["derive"]}
