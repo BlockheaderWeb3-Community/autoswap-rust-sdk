@@ -20,4 +20,5 @@ edition = "2024"
 
 [dependencies]
 thiserror = "2.0.16"
+starknet = "0.17.0"
 serde = {version="1.0.219", features=["derive"]}
