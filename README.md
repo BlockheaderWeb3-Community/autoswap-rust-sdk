@@ -152,23 +152,6 @@ This implementation covers the foundational aspects of Issues #1-#4 from the ori
 -  **Issue #3**: Starknet integration (basic structure implemented, full integration pending)
 -  **Issue #4**: Contract ABI and interface implementation (structure ready, needs Starknet integration)
 
-## Roadmap
-
-### Next Steps
-
-1. **Fix Starknet Integration**: Resolve dependency issues and implement full blockchain connectivity
-2. **Complete Contract ABI**: Implement all contract methods and interactions
-3. **Add Pool Management**: Implement Ekubo pool data fetching and management
-4. **Token Management**: Add comprehensive token information and validation
-5. **Advanced Features**: Add swap execution, approvals, and transaction management
-
-### Future Releases
-
-- **v0.2.0**: Full Starknet integration and contract interactions
-- **v0.3.0**: Pool management and Ekubo integration
-- **v0.4.0**: Advanced features and optimization
-- **v1.0.0**: Production-ready release with full feature parity
-
 ## Contributing
 
 Contributions are welcome! Please see the [Issues](https://github.com/BlockheaderWeb3-Community/autoswap-rust-sdk/issues) for current development priorities.
