@@ -4,7 +4,7 @@ use autoswap_rust_sdk::types::connector::{
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    println!("🚀 AutoSwappr Rust SDK - Demo Example");
+    println!(" AutoSwappr Rust SDK - Demo Example");
     println!("=====================================");
     println!("This example demonstrates the SDK without requiring real credentials.");
     println!("It shows the API structure and data types used in the SDK.\n");
@@ -27,7 +27,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("  Private Key: {}...", &config.private_key[..10]);
 
     // Demonstrate data types
-    println!("\n🔧 Data Types Demonstration:");
+    println!("\n Data Types Demonstration:");
 
     // Uint256 example
     let amount = Uint256::from_u128(1000000000000000000u128); // 1 ETH
@@ -86,7 +86,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     );
 
     // Demonstrate address validation
-    println!("\n🔍 Address Validation:");
+    println!("\n Address Validation:");
     let valid_addresses = vec![
         "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7", // ETH
         "0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d", // STRK
@@ -98,12 +98,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!(
             "  {}: {}",
             addr,
-            if is_valid { "✅ Valid" } else { "❌ Invalid" }
+            if is_valid { " Valid" } else { " Invalid" }
         );
     }
 
     // Demonstrate token addresses
-    println!("\n🪙 Token Addresses:");
+    println!("\n Token Addresses:");
     println!(
         "  ETH: {}",
         autoswap_rust_sdk::contracts::addresses::mainnet::ETH
@@ -126,7 +126,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     );
 
     // Demonstrate contract addresses
-    println!("\n📄 Contract Addresses:");
+    println!("\n Contract Addresses:");
     println!(
         "  AutoSwappr: {}",
         autoswap_rust_sdk::contracts::addresses::mainnet::AUTOSWAPPR
@@ -145,7 +145,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     );
 
     // Demonstrate conversion functions
-    println!("\n🔄 Conversion Functions:");
+    println!("\n Conversion Functions:");
     let test_amount = 1000000000000000000u128; // 1 ETH
     let (low, high) = autoswap_rust_sdk::contracts::conversions::u128_to_uint256(test_amount);
     println!("  u128_to_uint256(1 ETH): low={}, high={}", low, high);
@@ -154,25 +154,25 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("  uint256_to_u128: {}", back_to_u128);
 
     // Show what the client would do
-    println!("\n🚀 Client Capabilities (requires real credentials):");
-    println!("  ✅ Create AutoSwapprClient with real Starknet integration");
-    println!("  ✅ Get contract parameters from blockchain");
-    println!("  ✅ Get token information (name, symbol, decimals)");
-    println!("  ✅ Get token balances");
-    println!("  ✅ Check token allowances");
-    println!("  ✅ Approve tokens for spending");
-    println!("  ✅ Execute Ekubo swaps");
-    println!("  ✅ Execute AVNU swaps");
-    println!("  ✅ Execute Fibrous swaps");
-    println!("  ✅ Get USD price conversions");
+    println!("\n Client Capabilities (requires real credentials):");
+    println!("   Create AutoSwapprClient with real Starknet integration");
+    println!("   Get contract parameters from blockchain");
+    println!("   Get token information (name, symbol, decimals)");
+    println!("   Get token balances");
+    println!("   Check token allowances");
+    println!("   Approve tokens for spending");
+    println!("   Execute Ekubo swaps");
+    println!("   Execute AVNU swaps");
+    println!("   Execute Fibrous swaps");
+    println!("   Get USD price conversions");
 
-    println!("\n📝 To use the real client:");
+    println!("\n To use the real client:");
     println!("  1. Set environment variables:");
     println!("     export PRIVATE_KEY=\"your_real_private_key\"");
     println!("     export ACCOUNT_ADDRESS=\"your_real_account_address\"");
     println!("  2. Run: cargo run --example advanced_usage");
 
-    println!("\n🎉 Demo completed successfully!");
+    println!("\n Demo completed successfully!");
     println!("   The SDK is ready for real Starknet integration!");
 
     Ok(())

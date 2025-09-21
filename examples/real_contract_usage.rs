@@ -15,7 +15,7 @@ use std::env;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    println!("🚀 AutoSwappr Rust SDK - Real Contract Usage Example");
+    println!(" AutoSwappr Rust SDK - Real Contract Usage Example");
     println!("=====================================================");
 
     // Get configuration from environment variables
@@ -26,8 +26,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let account_address =
         env::var("ACCOUNT_ADDRESS").expect("ACCOUNT_ADDRESS environment variable is required");
 
-    println!("📡 RPC URL: {}", rpc_url);
-    println!("🔑 Account: {}", account_address);
+    println!(" RPC URL: {}", rpc_url);
+    println!(" Account: {}", account_address);
 
     // Create provider
     let provider = JsonRpcClient::new(HttpTransport::new(Url::parse(&rpc_url)?));
@@ -67,10 +67,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("STRK: {}", strk_contract.address());
 
     // Example 1: Get contract parameters
-    println!("\n🔍 Getting AutoSwappr contract parameters...");
+    println!("\n Getting AutoSwappr contract parameters...");
     match autoswappr_contract.get_contract_parameters(&provider).await {
         Ok(params) => {
-            println!("✅ Contract parameters retrieved:");
+            println!(" Contract parameters retrieved:");
             println!("  Fees Collector: {}", params.fees_collector);
             println!("  Fibrous Exchange: {}", params.fibrous_exchange_address);
             println!("  AVNU Exchange: {}", params.avnu_exchange_address);
@@ -79,41 +79,41 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             println!("  Fee Type: {:?}", params.fee_type);
             println!("  Percentage Fee: {}", params.percentage_fee);
         }
-        Err(e) => println!("❌ Failed to get contract parameters: {}", e),
+        Err(e) => println!(" Failed to get contract parameters: {}", e),
     }
 
     // Example 2: Get token information
-    println!("\n🪙 Getting token information...");
+    println!("\n Getting token information...");
 
     // Get ETH token info
     match eth_contract.name(&provider).await {
-        Ok(name) => println!("✅ ETH Name: {}", name),
-        Err(e) => println!("❌ Failed to get ETH name: {}", e),
+        Ok(name) => println!(" ETH Name: {}", name),
+        Err(e) => println!(" Failed to get ETH name: {}", e),
     }
 
     match eth_contract.symbol(&provider).await {
-        Ok(symbol) => println!("✅ ETH Symbol: {}", symbol),
-        Err(e) => println!("❌ Failed to get ETH symbol: {}", e),
+        Ok(symbol) => println!(" ETH Symbol: {}", symbol),
+        Err(e) => println!(" Failed to get ETH symbol: {}", e),
     }
 
     match eth_contract.decimals(&provider).await {
-        Ok(decimals) => println!("✅ ETH Decimals: {}", decimals),
-        Err(e) => println!("❌ Failed to get ETH decimals: {}", e),
+        Ok(decimals) => println!(" ETH Decimals: {}", decimals),
+        Err(e) => println!(" Failed to get ETH decimals: {}", e),
     }
 
     // Get STRK token info
     match strk_contract.name(&provider).await {
-        Ok(name) => println!("✅ STRK Name: {}", name),
-        Err(e) => println!("❌ Failed to get STRK name: {}", e),
+        Ok(name) => println!(" STRK Name: {}", name),
+        Err(e) => println!(" Failed to get STRK name: {}", e),
     }
 
     match strk_contract.symbol(&provider).await {
-        Ok(symbol) => println!("✅ STRK Symbol: {}", symbol),
-        Err(e) => println!("❌ Failed to get STRK symbol: {}", e),
+        Ok(symbol) => println!(" STRK Symbol: {}", symbol),
+        Err(e) => println!(" Failed to get STRK symbol: {}", e),
     }
 
     // Example 3: Get token balances
-    println!("\n💰 Getting token balances...");
+    println!("\n Getting token balances...");
 
     match eth_contract.balance_of(&provider, address).await {
         Ok(balance) => {
@@ -121,9 +121,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 balance.low.try_into().unwrap_or(Felt::ZERO),
                 balance.high.try_into().unwrap_or(Felt::ZERO),
             );
-            println!("✅ ETH Balance: {}", balance_u128);
+            println!(" ETH Balance: {}", balance_u128);
         }
-        Err(e) => println!("❌ Failed to get ETH balance: {}", e),
+        Err(e) => println!(" Failed to get ETH balance: {}", e),
     }
 
     match strk_contract.balance_of(&provider, address).await {
@@ -132,13 +132,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 balance.low.try_into().unwrap_or(Felt::ZERO),
                 balance.high.try_into().unwrap_or(Felt::ZERO),
             );
-            println!("✅ STRK Balance: {}", balance_u128);
+            println!(" STRK Balance: {}", balance_u128);
         }
-        Err(e) => println!("❌ Failed to get STRK balance: {}", e),
+        Err(e) => println!(" Failed to get STRK balance: {}", e),
     }
 
     // Example 4: Get token allowance
-    println!("\n🔐 Getting token allowances...");
+    println!("\n Getting token allowances...");
 
     match eth_contract
         .allowance(&provider, address, autoswappr_contract.address())
@@ -149,13 +149,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 allowance.low.try_into().unwrap_or(Felt::ZERO),
                 allowance.high.try_into().unwrap_or(Felt::ZERO),
             );
-            println!("✅ ETH Allowance for AutoSwappr: {}", allowance_u128);
+            println!(" ETH Allowance for AutoSwappr: {}", allowance_u128);
         }
-        Err(e) => println!("❌ Failed to get ETH allowance: {}", e),
+        Err(e) => println!(" Failed to get ETH allowance: {}", e),
     }
 
     // Example 5: Get token amount in USD
-    println!("\n💵 Getting token amounts in USD...");
+    println!("\n Getting token amounts in USD...");
 
     let test_amount = Uint256::from_u128(1000000000000000000); // 1 ETH (18 decimals)
     match autoswappr_contract
@@ -167,13 +167,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 usd_amount.low.try_into().unwrap_or(Felt::ZERO),
                 usd_amount.high.try_into().unwrap_or(Felt::ZERO),
             );
-            println!("✅ 1 ETH in USD: ${}", usd_u128);
+            println!(" 1 ETH in USD: ${}", usd_u128);
         }
-        Err(e) => println!("❌ Failed to get ETH USD amount: {}", e),
+        Err(e) => println!(" Failed to get ETH USD amount: {}", e),
     }
 
     // Example 6: Create swap data (for demonstration)
-    println!("\n🔄 Creating swap data for demonstration...");
+    println!("\n Creating swap data for demonstration...");
 
     let swap_data = SwapData {
         params: SwapParameters {
@@ -195,26 +195,26 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         caller: account_address.clone(),
     };
 
-    println!("✅ Swap data created:");
+    println!(" Swap data created:");
     println!("  Amount: {} ETH", swap_data.params.amount.mag.low);
     println!("  Token0: {}", swap_data.pool_key.token0);
     println!("  Token1: {}", swap_data.pool_key.token1);
     println!("  Fee: {} bps", swap_data.pool_key.fee);
 
     // Example 7: Demonstrate token approval (commented out for safety)
-    println!("\n⚠️  Token approval example (commented out for safety):");
+    println!("\n  Token approval example (commented out for safety):");
     println!("   To approve tokens for swapping, you would call:");
     println!("   eth_contract.approve(&account, autoswappr_contract.address(), amount).await");
     println!("   This would return a transaction hash upon success.");
 
     // Example 8: Demonstrate swap execution (commented out for safety)
-    println!("\n⚠️  Swap execution example (commented out for safety):");
+    println!("\n  Swap execution example (commented out for safety):");
     println!("   To execute a swap, you would call:");
     println!("   autoswappr_contract.ekubo_swap(&account, swap_data).await");
     println!("   This would return a transaction hash upon success.");
 
-    println!("\n🎉 Example completed successfully!");
-    println!("\n📝 Note: This example demonstrates read-only operations.");
+    println!("\n Example completed successfully!");
+    println!("\n Note: This example demonstrates read-only operations.");
     println!("   For actual swaps, you would need to:");
     println!("   1. Approve tokens for the AutoSwappr contract");
     println!("   2. Execute the swap transaction");

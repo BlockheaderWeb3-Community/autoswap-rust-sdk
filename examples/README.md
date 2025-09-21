@@ -9,14 +9,14 @@ This directory contains examples demonstrating how to use the AutoSwappr Rust SD
 This example demonstrates how to interact with real Starknet contracts using the AutoSwappr SDK.
 
 **Features demonstrated:**
-- ✅ Reading contract parameters
-- ✅ Getting token information (name, symbol, decimals)
-- ✅ Checking token balances
-- ✅ Checking token allowances
-- ✅ Getting token amounts in USD
-- ✅ Creating swap data structures
-- ⚠️ Token approval (commented out for safety)
-- ⚠️ Swap execution (commented out for safety)
+-  Reading contract parameters
+-  Getting token information (name, symbol, decimals)
+-  Checking token balances
+-  Checking token allowances
+-  Getting token amounts in USD
+-  Creating swap data structures
+-  Token approval (commented out for safety)
+-  Swap execution (commented out for safety)
 
 **Prerequisites:**
 - Set environment variables:
@@ -45,15 +45,15 @@ cargo run --example basic_usage
 This example demonstrates advanced usage patterns with the real `AutoSwapprClient` that provides full Starknet integration.
 
 **Features demonstrated:**
-- ✅ Real contract parameter reading
-- ✅ Token information retrieval (name, symbol, decimals)
-- ✅ Token balance checking
-- ✅ Token allowance checking
-- ✅ USD price conversion
-- ✅ Swap data creation
-- ⚠️ Token approval (commented out for safety)
-- ⚠️ Swap execution (commented out for safety)
-- ✅ Advanced client features overview
+-  Real contract parameter reading
+-  Token information retrieval (name, symbol, decimals)
+-  Token balance checking
+-  Token allowance checking
+-  USD price conversion
+-  Swap data creation
+-  Token approval (commented out for safety)
+-  Swap execution (commented out for safety)
+-  Advanced client features overview
 
 **Prerequisites:**
 - Set environment variables:

@@ -4,11 +4,11 @@ A Rust implementation of the AutoSwappr SDK for interacting with the AutoSwappr 
 
 ## Status
 
-✅ **Real Implementation** - This is a complete implementation with actual Starknet integration, real contract ABI, and full functionality.
+ **Real Implementation** - This is a complete implementation with actual Starknet integration, real contract ABI, and full functionality.
 
 ## Features
 
-### ✅ Fully Implemented (Issues #1, #2, #3, #4)
+###  Fully Implemented (Issues #1, #2, #3, #4)
 
 - **Project Setup**: Complete Cargo configuration with proper metadata
 - **Core Type Definitions**: All essential data structures and types
@@ -147,10 +147,10 @@ cargo run --example basic_usage
 
 This implementation covers the foundational aspects of Issues #1-#4 from the original roadmap:
 
-- ✅ **Issue #1**: Project setup and Cargo configuration
-- ✅ **Issue #2**: Core type definitions and data structures  
-- 🔄 **Issue #3**: Starknet integration (basic structure implemented, full integration pending)
-- 🔄 **Issue #4**: Contract ABI and interface implementation (structure ready, needs Starknet integration)
+-  **Issue #1**: Project setup and Cargo configuration
+-  **Issue #2**: Core type definitions and data structures  
+-  **Issue #3**: Starknet integration (basic structure implemented, full integration pending)
+-  **Issue #4**: Contract ABI and interface implementation (structure ready, needs Starknet integration)
 
 ## Roadmap
 
@@ -180,4 +180,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Related Projects
 
 - [AutoSwappr TypeScript SDK](https://github.com/BlockheaderWeb3-Community/autoswap-sdk) - Original TypeScript implementation
-- [AutoSwappr Contract](https://github.com/BlockheaderWeb3-Community/autoswappr-contract) - Smart contract implementation
