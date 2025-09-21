@@ -5,6 +5,9 @@ pub mod provider;
 pub mod simple_client;
 pub mod types;
 
+#[cfg(test)]
+mod contracts_test;
+
 // Re-export main types and clients for easy access
 pub use client::AutoSwapprClient;
 pub use contracts::{AutoSwapprContract, Erc20Contract, addresses};

@@ -1,7 +1,6 @@
 use autoswap_rust_sdk::types::connector::{
     Amount, AutoSwapprConfig, PoolKey, SwapData, SwapParameters, Uint256,
 };
-use std::env;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
