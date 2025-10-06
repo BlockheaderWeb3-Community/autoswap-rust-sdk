@@ -173,7 +173,8 @@ mod tests {
 
     #[tokio::test]
     #[ignore = "owner address and private key  is required to run the test"]
-    async fn it_works_argent() { // currently having issue with argent wallet ()
+    async fn it_works_argent() {
+        // currently having issue with argent wallet ()
         let rpc_url = "YOUR MAINNET RPC".to_string();
         let account_address = "YOUR WALLET ADDRESS".to_string();
         let private_key = "YOUR WALLET PRIVATE KEY".to_string();
