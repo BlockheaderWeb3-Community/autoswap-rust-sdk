@@ -1,12 +1,25 @@
 use serde::{Deserialize, Serialize};
+use starknet::{
+    accounts::SingleOwnerAccount,
+    core::{
+        codec::{Decode, Encode},
+        types::{Felt, U256},
+    },
+    providers::{JsonRpcClient, jsonrpc::HttpTransport},
+    signers::LocalWallet,
+};
 use thiserror::Error;
+
+use crate::constant::{USDC, USDT};
+
 /// Configuration for the AutoSwappr SDK
-#[derive(Debug, Serialize, Deserialize)]
-pub struct AutoSwapprConfig {
-    pub contract_address: String,
+#[derive(Debug)]
+pub struct AutoSwappr {
     pub rpc_url: String,
     pub account_address: String,
     pub private_key: String,
+    pub account: SingleOwnerAccount<JsonRpcClient<HttpTransport>, LocalWallet>,
+    pub contract_address: Felt,
 }
 
 /// Uint256 representation for Starknet
@@ -36,47 +49,71 @@ impl Uint256 {
 }
 
 /// Ekubo pool key structure
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, Encode, Decode)]
 pub struct PoolKey {
-    pub token0: String,    // First token in the pool
-    pub token1: String,    // Second token in the pool
-    pub fee: u128,         // Pool fee in basis points (u128)
-    pub tick_spacing: u32, // Pool extension parameter (felt252)
-    pub extension: String, // Pool extension parameter
+    pub token0: Felt,       // First token in the pool
+    pub token1: Felt,       // Second token in the pool
+    pub fee: u128,          // Pool fee in basis points (u128)
+    pub tick_spacing: u128, // Pool extension parameter (felt252)
+    pub extension: Felt,    // Pool extension parameter
+}
+/// Amount to swap with magnitude and sign
+#[derive(Debug, Serialize, Deserialize, Clone, Encode, Decode)]
+pub struct I129 {
+    pub mag: u128,  // u128 magnitude
+    pub sign: bool, // Always positive for swaps
 }
 
-/// Amount to swap with magnitude and sign
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Amount {
-    pub mag: Uint256, // Uint256 magnitude
-    pub sign: bool,   // Always positive for swaps
+impl I129 {
+    pub fn new(mag: u128, sign: bool) -> Self {
+        I129 { mag, sign }
+    }
 }
 
 /// Ekubo swap parameters
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Clone, Encode, Decode)]
 pub struct SwapParameters {
-    pub amount: Amount,            // Amount to swap with magnitude and sign
-    pub sqrt_ratio_limit: Uint256, // Price limit for the swap (Uint256)
-    pub is_token1: bool,           // Whether the input token is token1
-    pub skip_ahead: u32,           // Skip ahead parameter (u32)
+    pub amount: I129,           // Amount to swap with magnitude and sign
+    pub is_token1: bool,        // Whether the input token is token1
+    pub sqrt_ratio_limit: U256, // Price limit for the swap (U256)
+    pub skip_ahead: u32,        // Skip ahead parameter (u32)
 }
 
+impl SwapParameters {
+    pub fn new(amount: I129, is_token1: bool) -> Self {
+        SwapParameters {
+            amount,
+            is_token1,
+            sqrt_ratio_limit: U256::from(18446748437148339061u128),
+            skip_ahead: 0,
+        }
+    }
+}
 /// Swap data structure for ekubo_manual_swap function
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Clone, Encode, Decode)]
 pub struct SwapData {
     pub params: SwapParameters,
     pub pool_key: PoolKey,
-    pub caller: String,
+    pub caller: Felt,
 }
 
+impl SwapData {
+    pub fn new(params: SwapParameters, pool_key: PoolKey, caller: Felt) -> Self {
+        SwapData {
+            params,
+            pool_key,
+            caller,
+        }
+    }
+}
 /// Route structure for AVNU swaps
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Route {
-    pub token_from: String,
-    pub token_to: String,
-    pub exchange_address: String,
+    pub token_from: Felt,
+    pub token_to: Felt,
+    pub exchange_address: Felt,
     pub percent: u128,
-    pub additional_swap_params: Vec<String>,
+    pub additional_swap_params: Vec<Felt>,
 }
 
 /// Route parameters for Fibrous swaps
@@ -111,13 +148,6 @@ pub struct SwapResult {
 pub struct Delta {
     pub amount0: I129,
     pub amount1: I129,
-}
-
-/// I129 structure for Ekubo amounts
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct I129 {
-    pub mag: u128,
-    pub sign: bool,
 }
 
 /// Fee type enum
@@ -182,6 +212,26 @@ pub struct SwapOptions {
     pub is_token1: Option<bool>,          // Whether input token is token1 (defaults to false)
     pub skip_ahead: Option<u32>,          // Skip ahead parameter (defaults to 0)
     pub sqrt_ratio_limit: Option<String>, // Custom sqrt ratio limit
+}
+
+impl PoolKey {
+    pub fn new(token0: Felt, token1: Felt) -> Self {
+        let (fee, tick_spacing) = if token1 == *USDC {
+            (170141183460469235273462165868118016, 1000)
+        } else if token1 == *USDT {
+            (3402823669209384634633746074317682114, 19802)
+        } else {
+            (0, 0)
+        };
+
+        PoolKey {
+            token0,
+            token1,
+            fee,
+            tick_spacing,
+            extension: Felt::ZERO,
+        }
+    }
 }
 
 /// Error types for the AutoSwappr SDK
