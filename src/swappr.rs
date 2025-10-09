@@ -13,6 +13,17 @@ use starknet::{
 use crate::{
     I129, PoolKey, SwapData, SwapParameters,
     constant::{TokenAddress, u128_to_uint256},
+    types::connector::AutoSwappr,
+};
+use reqwest::Client;
+use serde_json::json;
+#[allow(dead_code)]
+type EkuboResponse = Result<
+    starknet::core::types::InvokeTransactionResult,
+    starknet::accounts::AccountError<
+        starknet::accounts::single_owner::SignError<starknet::signers::local_wallet::SignError>,
+    >,
+>;
     types::connector::{AutoSwappr, ErrorResponse, SuccessResponse},
 };
 use axum::Json;
@@ -257,46 +268,76 @@ impl AutoSwappr {
     }
 
     // pub async fn  ekubo_auto_swap(){
-    //     // todo steph
-    //     // approve contract to spend
-    //     //  sent a post request to auto swapper backend
-    //     // post request arg will look like  this
-    //     // ======       wallet_address, user address
-    //     //  =======      to_token,
-    //     // =======     from_token,
-    //     // =======      swap_amount,
+    // Implemented: approve token and notify backend for auto-swap
+    pub async fn ekubo_auto_swap(
+        &mut self,
+        token_from: Felt,
+        token_to: Felt,
+        amount: u128,
+        backend_url: &str,
+    ) -> Result<String, String> {
+        if amount == 0 {
+            return Err("ZERO SWAP AMOUNT".to_string());
+        }
 
-    //     // below  is how the approval fall will look
-    //     // handle error
+        // ensure token is supported to derive decimals
+        let token_decimal = TokenAddress::new()
+            .get_token_info_by_address(token_from)
+            .map_err(|e| e.to_string())?
+            .decimals;
 
-    //     // let account = approver_signer_account();
+        let actual_amount = amount * 10_u128.pow(token_decimal as u32);
+        let (amount_low, amount_high) = u128_to_uint256(actual_amount);
 
-    //     // if !is_valid_address(token) {
-    //     //     return Err("INVALID TOKEN ADDRESS".to_string());
-    //     // }
+        // Prepare approve call to allow contract to spend `token_from`
+        let approve_call = Call {
+            to: token_from,
+            selector: selector!("approve"),
+            calldata: vec![self.contract_address, amount_low, amount_high],
+        };
 
-    //     // let spender = contract_address_felt();
+        // set preconfirmed block for querying
+        self.account
+            .set_block_id(BlockId::Tag(BlockTag::PreConfirmed));
 
-    //     // let token = Felt::from_hex(token).expect("TOKEN ADDRESS NOT PROVIDED");
+        // send approve transaction
+        let approve_result = self
+            .account
+            .execute_v3(vec![approve_call])
+            .send()
+            .await
+            .map_err(|e| format!("approve failed: {}", e))?;
 
-    //     // // Convert amount to uint256 (split into low and high parts)
-    //     // let (amount_low, amount_high) = u128_to_uint256(amount);
+        // Prepare payload for backend
+        let payload = json!({
+            "wallet_address": format!("0x{:x}", self.account.address()),
+            "user_address": format!("0x{:x}", self.account.address()),
+            "to_token": format!("0x{:x}", token_to),
+            "from_token": format!("0x{:x}", token_from),
+            "swap_amount": actual_amount.to_string(),
+            "approve_tx_hash": format!("0x{:x}", approve_result.transaction_hash),
+        });
 
-    //     // // Prepare the calldata: [spender, amount_low, amount_high]
-    //     // let calldata = vec![spender, amount_low, amount_high];
+        let client = Client::new();
+        let resp = client
+            .post(backend_url)
+            .json(&payload)
+            .send()
+            .await
+            .map_err(|e| format!("network error: {}", e))?;
 
-    //     // let call = Call {
-    //     //     to: token,
-    //     //     selector: get_selector_from_name("approve").unwrap(),
-    //     //     calldata,
-    //     // };
-    //     // let execution = account
-    //     //     .execute_v3(vec![call])
-    //     //     .send()
-    //     //     .await
-    //     //     .map_err(|e| e.to_string())?;
-    //     // Ok(execution.transaction_hash)
-    // }
+        let status = resp.status();
+        let text = resp
+            .text()
+            .await
+            .map_err(|e| format!("response read error: {}", e))?;
+
+        if status.is_success() {
+            Ok(text)
+        } else {
+            Err(format!("backend error: {} - {}", status, text))
+        }
+    }
 }
 
 #[cfg(test)]
@@ -344,5 +385,25 @@ mod tests {
 
         assert!(result.await.is_ok());
         // println!("test complete {:?}", result.await.err().unwrap().message);
+    }
+
+    #[tokio::test]
+    #[ignore = "owner address, private key and backend required to run the test"]
+    async fn it_works_auto() {
+        // This test exercises `ekubo_auto_swap` flow: approve + notify backend.
+        // It is ignored by default because it requires a funded wallet and a reachable backend.
+        let rpc_url = "YOUR MAINNET RPC".to_string();
+        let account_address = "YOUR WALLET ADDRESS".to_string();
+        let private_key = "YOUR WALLET PRIVATE KEY".to_string();
+        let mut swapper = AutoSwappr::config(rpc_url, account_address, private_key);
+
+        // Use STRK -> USDC for a tiny amount (1 unit). Backend URL is a placeholder and
+        // should be replaced with a real auto-swapper endpoint when running the test.
+        let backend_url = "https://example.com/api/auto-swap";
+        let result = swapper.ekubo_auto_swap(*STRK, *USDC, 1, backend_url);
+
+        // Print the result (Ok response body or Err description). The test is ignored
+        // so it won't run in CI unless explicitly enabled.
+        println!("auto swap test result: {:?}", result.await);
     }
 }

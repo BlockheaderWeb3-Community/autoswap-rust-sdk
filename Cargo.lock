@@ -85,6 +85,7 @@ dependencies = [
  "hex",
  "reqwest",
  "serde",
+ "serde_json",
  "starknet",
  "starknet-accounts",
  "starknet-contract",
