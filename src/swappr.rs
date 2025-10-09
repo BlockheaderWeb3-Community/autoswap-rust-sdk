@@ -13,20 +13,11 @@ use starknet::{
 use crate::{
     I129, PoolKey, SwapData, SwapParameters,
     constant::{TokenAddress, u128_to_uint256},
-    types::connector::AutoSwappr,
-};
-use reqwest::Client;
-use serde_json::json;
-#[allow(dead_code)]
-type EkuboResponse = Result<
-    starknet::core::types::InvokeTransactionResult,
-    starknet::accounts::AccountError<
-        starknet::accounts::single_owner::SignError<starknet::signers::local_wallet::SignError>,
-    >,
->;
     types::connector::{AutoSwappr, ErrorResponse, SuccessResponse},
 };
 use axum::Json;
+use reqwest::Client;
+use serde_json::json;
 
 impl AutoSwappr {
     /// Configure a new AutoSwappr instance with wallet credentials.
@@ -269,7 +260,7 @@ impl AutoSwappr {
 
     // pub async fn  ekubo_auto_swap(){
     // Implemented: approve token and notify backend for auto-swap
-    pub async fn ekubo_auto_swap(
+    async fn _ekubo_auto_swap(
         &mut self,
         token_from: Felt,
         token_to: Felt,
@@ -350,10 +341,8 @@ mod tests {
     // #[ignore = "owner address and private key  is required to run the test"]
     async fn it_works_bravoos() {
         let rpc_url = "YOUR MAINNET RPC".to_string();
-        let account_address =
-            "YOUR WALLET ADDRESS".to_string();
-        let private_key =
-            "YOUR WALLET PRIVATE KEY".to_string();
+        let account_address = "YOUR WALLET ADDRESS".to_string();
+        let private_key = "YOUR WALLET PRIVATE KEY".to_string();
         let mut swapper = AutoSwappr::config(rpc_url, account_address, private_key).unwrap();
         let result = swapper.ekubo_manual_swap(*STRK, *USDC, 1);
         assert!(result.await.is_ok())
@@ -362,10 +351,8 @@ mod tests {
     #[ignore = "owner address and private key  is required to run the test"]
     async fn swap_with_zero_amount() {
         let rpc_url = "YOUR MAINNET RPC".to_string();
-        let account_address =
-            "YOUR WALLET ADDRESS".to_string();
-        let private_key =
-            "YOUR WALLET PRIVATE KEY".to_string();
+        let account_address = "YOUR WALLET ADDRESS".to_string();
+        let private_key = "YOUR WALLET PRIVATE KEY".to_string();
         let mut swapper = AutoSwappr::config(rpc_url, account_address, private_key).unwrap();
         let result = swapper.ekubo_manual_swap(*STRK, *USDC, 0);
 
@@ -376,10 +363,8 @@ mod tests {
     #[ignore = "owner address and private key  is required to run the test"]
     async fn it_works_argent() {
         let rpc_url = "YOUR MAINNET RPC".to_string();
-        let account_address =
-            "YOUR WALLET ADDRESS".to_string();
-        let private_key =
-            "YOUR WALLET PRIVATE KEY".to_string();
+        let account_address = "YOUR WALLET ADDRESS".to_string();
+        let private_key = "YOUR WALLET PRIVATE KEY".to_string();
         let mut swapper = AutoSwappr::config(rpc_url, account_address, private_key).unwrap();
         let result = swapper.ekubo_manual_swap(*STRK, *USDC, 1);
 
@@ -395,12 +380,12 @@ mod tests {
         let rpc_url = "YOUR MAINNET RPC".to_string();
         let account_address = "YOUR WALLET ADDRESS".to_string();
         let private_key = "YOUR WALLET PRIVATE KEY".to_string();
-        let mut swapper = AutoSwappr::config(rpc_url, account_address, private_key);
+        let mut swapper = AutoSwappr::config(rpc_url, account_address, private_key).unwrap();
 
         // Use STRK -> USDC for a tiny amount (1 unit). Backend URL is a placeholder and
         // should be replaced with a real auto-swapper endpoint when running the test.
         let backend_url = "https://example.com/api/auto-swap";
-        let result = swapper.ekubo_auto_swap(*STRK, *USDC, 1, backend_url);
+        let result = swapper._ekubo_auto_swap(*STRK, *USDC, 1, backend_url);
 
         // Print the result (Ok response body or Err description). The test is ignored
         // so it won't run in CI unless explicitly enabled.
