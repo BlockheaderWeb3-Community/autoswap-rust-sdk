@@ -15,8 +15,8 @@ use crate::{
     constant::{TokenAddress, u128_to_uint256},
     types::connector::AutoSwappr,
 };
-use serde_json::json;
 use reqwest::Client;
+use serde_json::json;
 #[allow(dead_code)]
 type EkuboResponse = Result<
     starknet::core::types::InvokeTransactionResult,
@@ -112,7 +112,7 @@ impl AutoSwappr {
     }
 
     // pub async fn  ekubo_auto_swap(){
-        // Implemented: approve token and notify backend for auto-swap
+    // Implemented: approve token and notify backend for auto-swap
     pub async fn ekubo_auto_swap(
         &mut self,
         token_from: Felt,
