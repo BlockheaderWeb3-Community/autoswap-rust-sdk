@@ -13,18 +13,88 @@ use starknet::{
 use crate::{
     I129, PoolKey, SwapData, SwapParameters,
     constant::{TokenAddress, u128_to_uint256},
-    types::connector::AutoSwappr,
+    types::connector::{AutoSwappr, ErrorResponse, SuccessResponse},
 };
-#[allow(dead_code)]
-type EkuboResponse = Result<
-    starknet::core::types::InvokeTransactionResult,
-    starknet::accounts::AccountError<
-        starknet::accounts::single_owner::SignError<starknet::signers::local_wallet::SignError>,
-    >,
->;
+use axum::Json;
+
 impl AutoSwappr {
-    // wallet configuration
-    pub fn config(rpc_url: String, account_address: String, private_key: String) -> AutoSwappr {
+    /// Configure a new AutoSwappr instance with wallet credentials.
+    ///
+    /// This function initializes the connection to Starknet and sets up the account
+    /// for executing swaps through the AutoSwappr contract.
+    ///
+    /// # Arguments
+    ///
+    /// * `rpc_url` - The RPC endpoint URL for Starknet (e.g., Alchemy, Infura)
+    /// * `account_address` - Your wallet address on Starknet
+    /// * `private_key` - Your wallet's private key (keep this secure!)
+    ///
+    /// # Returns
+    ///
+    /// Returns `Ok(AutoSwappr)` if configuration is successful, or an `Err(Json<ErrorResponse>)`
+    /// if any of the inputs are invalid or empty.
+    ///
+    /// # Errors
+    ///
+    /// This function will return an error if:
+    /// - `rpc_url` is an empty string
+    /// - `account_address` is an empty string
+    /// - `private_key` is an empty string
+    /// - The RPC URL format is invalid
+    /// - The account address or private key cannot be parsed as valid Felt values
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use auto_swappr::types::connector::AutoSwappr;
+    ///
+    /// let rpc_url = "https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_9/YOUR_API_KEY".to_string();
+    /// let account_address = "0x05362484eb9b91ae4365963dad33794cb50a5f93eb7a08b0280cf0f0c0129e4f".to_string();
+    /// let private_key = "0x062e0c4dc96f3d877af48285a5442ce69860a50b11a1d91eae1e3f128df1c454".to_string();
+    ///
+    /// let swapper = AutoSwappr::config(rpc_url, account_address, private_key).unwrap();
+    /// ```
+    ///
+    /// # Example with Error Handling
+    ///
+    /// ```
+    /// use auto_swappr::types::connector::AutoSwappr;
+    ///
+    /// // This will fail due to empty RPC URL
+    /// let result = AutoSwappr::config(
+    ///     "".to_string(),
+    ///     "0x123".to_string(),
+    ///     "0x456".to_string()
+    /// );
+    ///
+    /// assert!(result.is_err());
+    /// ```
+
+    pub fn config(
+        rpc_url: String,
+        account_address: String,
+        private_key: String,
+    ) -> Result<AutoSwappr, Json<ErrorResponse>> {
+        if rpc_url.is_empty() {
+            return Err(Json(ErrorResponse {
+                success: false,
+                message: "EMPTY RPC STRING".to_string(),
+            }));
+        }
+
+        if account_address.is_empty() {
+            return Err(Json(ErrorResponse {
+                success: false,
+                message: "EMPTY ACCOUNT ADDRESS STRING".to_string(),
+            }));
+        }
+
+        if private_key.is_empty() {
+            return Err(Json(ErrorResponse {
+                success: false,
+                message: "EMPTY PRIVATE KEY STRING".to_string(),
+            }));
+        }
         let signer = LocalWallet::from(SigningKey::from_secret_scalar(
             Felt::from_hex(&private_key).unwrap(),
         ));
@@ -41,27 +111,102 @@ impl AutoSwappr {
             chain_id::MAINNET,
             ExecutionEncoding::New,
         );
-        AutoSwappr {
+        Ok(AutoSwappr {
             rpc_url,
             account_address,
             private_key,
             account,
             contract_address,
-        }
+        })
     }
 
-    // to do this function need a proper error handling
-    // ekubo manual swap
+    /// Execute a manual token swap.
+    ///
+    /// # Arguments
+    ///
+    /// * `token0` - The address of the token to swap from (as Felt)
+    /// * `token1` - The address of the token to swap to (as Felt)
+    /// * `swap_amount` - The amount to swap in the smallest unit (e.g., wei for ETH)
+    ///
+    /// # Returns
+    ///
+    /// Returns `Ok(Json<SuccessResponse>)` with the transaction hash on success,
+    /// or `Err(Json<ErrorResponse>)` if the swap fails.
+    ///
+    /// # Errors
+    ///
+    /// This function will return an error if:
+    /// - `swap_amount` is zero
+    /// - Token information cannot be retrieved
+    /// - The transaction execution fails
+    /// - Insufficient balance or allowance
+    ///
+    /// # Examples
+    ///
+    /// ## Basic Swap Example
+    ///
+    /// ```no_run
+    /// use auto_swappr::types::connector::AutoSwappr;
+    /// use auto_swappr::constant::{STRK, USDC};
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() {
+    /// let rpc_url = "https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_9/YOUR_API_KEY".to_string();
+    /// let account_address = "0x053620000000000000000000000000000000000000000000000000000000".to_string();
+    /// let private_key = "0x000000000000000000000000000000000000000000000000000000000000".to_string();
+    ///
+    /// let mut swapper = AutoSwappr::config(rpc_url, account_address, private_key).unwrap();
+    ///
+    /// // Swap 1 STRK token (amount is in base units without decimals)
+    /// let result = swapper.ekubo_manual_swap(*STRK, *USDC, 1).await;
+    ///
+    /// match result {
+    ///     Ok(response) => println!("Swap successful! TX: {:?}", response.tx_hash),
+    ///     Err(error) => println!("Swap failed: {}", error.message),
+    /// }
+    /// # }
+    /// ```
+    ///
+    /// ## Error Handling Example
+    ///
+    /// ```no_run
+    /// use auto_swappr::types::connector::AutoSwappr;
+    /// use auto_swappr::constant::{STRK, USDC};
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() {
+    /// # let rpc_url = "https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_9/YOUR_API_KEY".to_string();
+    /// # let account_address = "0x05362484eb9b91ae4365963dad33794cb50a5f93eb7a08b0280cf0f0c0129e4f".to_string();
+    /// # let private_key = "0x062e0c4dc96f3d877af48285a5442ce69860a50b11a1d91eae1e3f128df1c454".to_string();
+    /// let mut swapper = AutoSwappr::config(rpc_url, account_address, private_key).unwrap();
+    ///
+    /// // This will fail because swap_amount is zero
+    /// let result = swapper.ekubo_manual_swap(*STRK, *USDC, 0).await;
+    ///
+    /// assert!(result.is_err());
+    /// if let Err(error) = result {
+    ///     assert_eq!(error.err().message, "SWAP AMOUNT IS ZERO");
+    /// }
+    /// # }
+    /// ```
+    /// # Notes
+    ///
+    /// - The `swap_amount` should be specified in base units (without decimal adjustment)
+    /// - The function automatically handles decimal conversion based on the token
+    /// - Both approval and swap are executed in a single transaction
+    /// - Make sure your account has sufficient balance of `token0`
     pub async fn ekubo_manual_swap(
         &mut self,
         token0: Felt,
         token1: Felt,
         swap_amount: u128,
-    ) -> Result<String, String> {
+    ) -> Result<Json<SuccessResponse>, Json<ErrorResponse>> {
         if swap_amount == 0 {
-            return Err("ZERO SWAP AMOUNT".to_string());
+            return Err(Json(ErrorResponse {
+                success: false,
+                message: "SWAP AMOUNT IS ZERO".to_string(),
+            }));
         }
-
         let token_decimal = TokenAddress::new()
             .get_token_info_by_address(token0)
             .unwrap()
@@ -84,7 +229,6 @@ impl AutoSwappr {
             selector: selector!("approve"),
             calldata: vec![self.contract_address, amount_low, amount_high],
         };
-        println!("Calldata: {:?}", serialized);
 
         let swap_call = Call {
             to: self.contract_address,
@@ -98,13 +242,16 @@ impl AutoSwappr {
             .send()
             .await;
         match result {
-            Ok(x) => {
-                println!("txt is succesful {:?}", x);
-                return Ok("SUCCESSFUL".to_string());
-            }
+            Ok(x) => Ok(Json(SuccessResponse {
+                success: true,
+                tx_hash: x.transaction_hash,
+            })),
             Err(x) => {
-                println!("error message {}", x);
-                Err("error ".to_string())
+                println!("error message {}", x.to_string());
+                Err(Json(ErrorResponse {
+                    success: false,
+                    message: "FAILED TO SWAP".to_string(),
+                }))
             }
         }
     }
@@ -159,29 +306,43 @@ mod tests {
     use super::*;
 
     #[tokio::test]
-    #[ignore = "owner address and private key  is required to run the test"]
+    // #[ignore = "owner address and private key  is required to run the test"]
     async fn it_works_bravoos() {
         let rpc_url = "YOUR MAINNET RPC".to_string();
-        let account_address = "YOUR WALLET ADDRESS".to_string();
-        let private_key = "YOUR WALLET PRIVATE KEY".to_string();
-        let mut swapper = AutoSwappr::config(rpc_url, account_address, private_key);
+        let account_address =
+            "YOUR WALLET ADDRESS".to_string();
+        let private_key =
+            "YOUR WALLET PRIVATE KEY".to_string();
+        let mut swapper = AutoSwappr::config(rpc_url, account_address, private_key).unwrap();
         let result = swapper.ekubo_manual_swap(*STRK, *USDC, 1);
+        assert!(result.await.is_ok())
+    }
+    #[tokio::test]
+    #[ignore = "owner address and private key  is required to run the test"]
+    async fn swap_with_zero_amount() {
+        let rpc_url = "YOUR MAINNET RPC".to_string();
+        let account_address =
+            "YOUR WALLET ADDRESS".to_string();
+        let private_key =
+            "YOUR WALLET PRIVATE KEY".to_string();
+        let mut swapper = AutoSwappr::config(rpc_url, account_address, private_key).unwrap();
+        let result = swapper.ekubo_manual_swap(*STRK, *USDC, 0);
 
-        // assert!(result.await.clone().is_ok());
-        println!("test complete {:?}", result.await.ok());
+        assert!(result.await.is_err())
     }
 
     #[tokio::test]
     #[ignore = "owner address and private key  is required to run the test"]
     async fn it_works_argent() {
-        // currently having issue with argent wallet ()
         let rpc_url = "YOUR MAINNET RPC".to_string();
-        let account_address = "YOUR WALLET ADDRESS".to_string();
-        let private_key = "YOUR WALLET PRIVATE KEY".to_string();
-        let mut swapper = AutoSwappr::config(rpc_url, account_address, private_key);
+        let account_address =
+            "YOUR WALLET ADDRESS".to_string();
+        let private_key =
+            "YOUR WALLET PRIVATE KEY".to_string();
+        let mut swapper = AutoSwappr::config(rpc_url, account_address, private_key).unwrap();
         let result = swapper.ekubo_manual_swap(*STRK, *USDC, 1);
 
-        // assert!(result.await.clone().is_ok());
-        println!("test complete {:?}", result.await.ok());
+        assert!(result.await.is_ok());
+        // println!("test complete {:?}", result.await.err().unwrap().message);
     }
 }

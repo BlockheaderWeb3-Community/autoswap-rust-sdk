@@ -234,6 +234,18 @@ impl PoolKey {
     }
 }
 
+#[derive(Debug, Serialize)]
+pub struct SuccessResponse {
+    pub success: bool,
+    pub tx_hash: Felt,
+}
+
+#[derive(Debug, Serialize)]
+pub struct ErrorResponse {
+    pub success: bool,
+    pub message: String,
+}
+
 /// Error types for the AutoSwappr SDK
 #[derive(Error, Debug)]
 pub enum AutoSwapprError {
