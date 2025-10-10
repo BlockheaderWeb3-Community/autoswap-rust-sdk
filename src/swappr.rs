@@ -165,13 +165,10 @@ impl AutoSwappr {
                 success: true,
                 tx_hash: x.transaction_hash,
             })),
-            Err(x) => {
-                println!("error message {}", x.to_string());
-                Err(Json(ErrorResponse {
-                    success: false,
-                    message: "FAILED TO SWAP".to_string(),
-                }))
-            }
+            Err(_) => Err(Json(ErrorResponse {
+                success: false,
+                message: "FAILED TO SWAP".to_string(),
+            })),
         }
     }
 

@@ -159,8 +159,6 @@ pub struct ContractInfo {
     pub percentage_fee: u16,
 }
 
-/// Token information for supported tokens
-
 /// Pool configuration for different token pairs
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct PoolConfig {

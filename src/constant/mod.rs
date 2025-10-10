@@ -36,7 +36,13 @@ pub struct TokenInfo<'a> {
     pub decimals: u8,
     name: &'a str,
 }
-#[allow(dead_code)]
+
+impl Default for TokenAddress<'static> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl TokenAddress<'static> {
     pub fn new() -> Self {
         let tokens: Vec<TokenInfo> = vec![
