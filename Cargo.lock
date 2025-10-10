@@ -82,18 +82,12 @@ name = "autoswap-rust-sdk"
 version = "0.1.0"
 dependencies = [
  "axum",
- "hex",
  "reqwest",
  "serde",
  "serde_json",
  "starknet",
- "starknet-accounts",
- "starknet-contract",
- "starknet-core",
- "starknet-providers",
  "thiserror 2.0.16",
  "tokio",
- "url",
 ]
 
 [[package]]

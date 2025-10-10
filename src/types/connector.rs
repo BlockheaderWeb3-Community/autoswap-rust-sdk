@@ -10,7 +10,7 @@ use starknet::{
 };
 use thiserror::Error;
 
-use crate::constant::{USDC, USDT};
+use crate::{USDC, USDT};
 
 /// Configuration for the AutoSwappr SDK
 #[derive(Debug)]
@@ -20,32 +20,6 @@ pub struct AutoSwappr {
     pub private_key: String,
     pub account: SingleOwnerAccount<JsonRpcClient<HttpTransport>, LocalWallet>,
     pub contract_address: Felt,
-}
-
-/// Uint256 representation for Starknet
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Uint256 {
-    pub low: u128,
-    pub high: u128,
-}
-
-impl Uint256 {
-    pub fn from_u128(value: u128) -> Self {
-        Self {
-            low: value,
-            high: 0,
-        }
-    }
-
-    pub fn from_string(value: &str) -> Result<Self, String> {
-        let parsed = value.parse::<u128>().map_err(|_| "Invalid number format")?;
-        Ok(Self::from_u128(parsed))
-    }
-
-    pub fn to_hex_string(&self) -> String {
-        // Convert Uint256 to hex string
-        format!("0x{:032x}{:032x}", self.high, self.low)
-    }
 }
 
 /// Ekubo pool key structure
@@ -116,15 +90,15 @@ pub struct Route {
     pub additional_swap_params: Vec<Felt>,
 }
 
-/// Route parameters for Fibrous swaps
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct RouteParams {
-    pub token_in: String,
-    pub token_out: String,
-    pub amount_in: Uint256,
-    pub min_received: Uint256,
-    pub destination: String,
-}
+// /// Route parameters for Fibrous swaps
+// #[derive(Debug, Serialize, Deserialize, Clone)]
+// pub struct RouteParams {
+//     pub token_in: String,
+//     pub token_out: String,
+//     pub amount_in: Uint256,
+//     pub min_received: Uint256,
+//     pub destination: String,
+// }
 
 /// Swap parameters for Fibrous swaps
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -186,13 +160,6 @@ pub struct ContractInfo {
 }
 
 /// Token information for supported tokens
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct TokenInfo {
-    pub address: String,
-    pub symbol: String,
-    pub decimals: u8,
-    pub name: String,
-}
 
 /// Pool configuration for different token pairs
 #[derive(Debug, Serialize, Deserialize, Clone)]
