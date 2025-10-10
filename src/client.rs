@@ -1,6 +1,6 @@
 use crate::{
     contracts::{AutoSwapprContract, Erc20Contract},
-    types::connector::{AutoSwapprConfig, AutoSwapprError, ContractInfo, SwapData, Uint256},
+    types::connector::{AutoSwappr, AutoSwapprError, ContractInfo, SwapData, Uint256},
 };
 use starknet::{
     accounts::{Account, ExecutionEncoding, SingleOwnerAccount},
@@ -18,12 +18,12 @@ pub struct AutoSwapprClient {
     provider: Arc<JsonRpcClient<HttpTransport>>,
     autoswappr_contract: AutoSwapprContract,
     account: SingleOwnerAccount<JsonRpcClient<HttpTransport>, LocalWallet>,
-    config: AutoSwapprConfig,
+    config: AutoSwappr,
 }
 
 impl AutoSwapprClient {
     /// Create a new AutoSwappr client with real Starknet integration
-    pub async fn new(config: AutoSwapprConfig) -> Result<Self, AutoSwapprError> {
+    pub async fn new(config: AutoSwappr) -> Result<Self, AutoSwapprError> {
         // Parse RPC URL
         let rpc_url = Url::parse(&config.rpc_url).map_err(|e| AutoSwapprError::InvalidInput {
             details: format!("Invalid RPC URL: {}", e),
@@ -430,7 +430,7 @@ impl AutoSwapprClient {
 mod tests {
     use super::*;
     use crate::types::connector::{
-        Amount, AutoSwapprConfig, PoolKey, SwapData, SwapParameters, Uint256,
+        Amount, AutoSwappr, PoolKey, SwapData, SwapParameters, Uint256,
     };
 
     fn create_test_config() -> AutoSwapprConfig {
