@@ -37,11 +37,11 @@ mod contracts_tests {
         // Test Fixed fee type
         assert_eq!(FeeType::Fixed.to_u8(), 0);
         assert_eq!(FeeType::from_u8(0), FeeType::Fixed);
-        
+
         // Test Percentage fee type
         assert_eq!(FeeType::Percentage.to_u8(), 1);
         assert_eq!(FeeType::from_u8(1), FeeType::Percentage);
-        
+
         // Test default for unknown value (returns Percentage for non-zero)
         assert_eq!(FeeType::from_u8(99), FeeType::Percentage);
     }
@@ -49,12 +49,12 @@ mod contracts_tests {
     #[test]
     fn test_pool_key_creation() {
         use crate::types::connector::PoolKey;
-        
+
         let token0 = Felt::from_hex("0x123").unwrap();
         let token1 = Felt::from_hex("0x456").unwrap();
-        
+
         let pool_key = PoolKey::new(token0, token1);
-        
+
         assert_eq!(pool_key.token0, token0);
         assert_eq!(pool_key.token1, token1);
         assert_eq!(pool_key.extension, Felt::ZERO);
@@ -63,11 +63,11 @@ mod contracts_tests {
     #[test]
     fn test_i129_struct() {
         use crate::types::connector::I129;
-        
+
         let amount = I129::new(1000000, false);
         assert_eq!(amount.mag, 1000000);
         assert_eq!(amount.sign, false);
-        
+
         let negative = I129::new(500000, true);
         assert_eq!(negative.mag, 500000);
         assert_eq!(negative.sign, true);
@@ -75,11 +75,11 @@ mod contracts_tests {
 
     #[test]
     fn test_swap_parameters() {
-        use crate::types::connector::{SwapParameters, I129};
-        
+        use crate::types::connector::{I129, SwapParameters};
+
         let amount = I129::new(1000000, false);
         let swap_params = SwapParameters::new(amount, false);
-        
+
         assert_eq!(swap_params.amount.mag, 1000000);
         assert_eq!(swap_params.is_token1, false);
         assert_eq!(swap_params.skip_ahead, 0);
@@ -89,7 +89,7 @@ mod contracts_tests {
     fn test_felt_creation() {
         let felt1 = Felt::from(12345u128);
         let felt2 = Felt::from_hex("0x123").unwrap();
-        
+
         assert!(felt1 != felt2);
         assert_eq!(felt1, Felt::from(12345u128));
     }
@@ -97,7 +97,7 @@ mod contracts_tests {
     #[test]
     fn test_contract_info_parsing() {
         use crate::types::connector::ContractInfo;
-        
+
         let info = ContractInfo {
             fees_collector: "0x123".to_string(),
             fibrous_exchange_address: "0x456".to_string(),
@@ -107,7 +107,7 @@ mod contracts_tests {
             fee_type: FeeType::Fixed,
             percentage_fee: 100,
         };
-        
+
         assert_eq!(info.fee_type, FeeType::Fixed);
         assert_eq!(info.percentage_fee, 100);
     }
@@ -115,7 +115,7 @@ mod contracts_tests {
     #[test]
     fn test_route_struct() {
         use crate::types::connector::Route;
-        
+
         let route = Route {
             token_from: Felt::from_hex("0x123").unwrap(),
             token_to: Felt::from_hex("0x456").unwrap(),
@@ -123,7 +123,7 @@ mod contracts_tests {
             percent: 100,
             additional_swap_params: vec![],
         };
-        
+
         assert_eq!(route.percent, 100);
         assert_eq!(route.additional_swap_params.len(), 0);
     }
