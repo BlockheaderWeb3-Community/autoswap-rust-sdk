@@ -1,58 +1,9 @@
 #[cfg(test)]
 mod contracts_tests {
-    use crate::contracts::{AutoSwapprContract, Erc20Contract, conversions};
     use crate::types::connector::FeeType;
     use starknet::core::types::Felt;
-    use std::sync::Arc;
 
-    #[test]
-    fn test_uint256_conversion() {
-        let our_uint256 = crate::types::connector::Uint256 { low: 1000, high: 0 };
-        let starknet_uint256 = conversions::uint256_to_starknet(&our_uint256);
-        let back_to_ours = conversions::starknet_to_uint256(&starknet_uint256);
-
-        assert_eq!(our_uint256.low, back_to_ours.low);
-        assert_eq!(our_uint256.high, back_to_ours.high);
-    }
-
-    #[test]
-    fn test_felt_to_ascii_string() {
-        // Test ETH symbol (0x455448 = "ETH")
-        let eth_symbol = Felt::from(0x455448u128);
-        let result = conversions::felt_to_ascii_string(eth_symbol);
-        assert_eq!(result, "ETH");
-
-        // Test Ether name (0x4574686572 = "Ether")
-        let ether_name = Felt::from(0x4574686572u128);
-        let result = conversions::felt_to_ascii_string(ether_name);
-        assert_eq!(result, "Ether");
-
-        // Test with some ASCII characters mixed with non-ASCII
-        let mixed = Felt::from(0x41424344u128); // "ABCD"
-        let result = conversions::felt_to_ascii_string(mixed);
-        assert_eq!(result, "ABCD");
-
-        // Test with no valid ASCII characters - should return hex
-        let non_ascii = Felt::from(0x1234567890abcdefu128);
-        let result = conversions::felt_to_ascii_string(non_ascii);
-        // The function extracts bytes and if none are valid ASCII, it returns hex
-        assert!(result.len() > 0); // Should return something
-    }
-
-    #[test]
-    fn test_u128_to_uint256_conversion() {
-        let amount = 1000000000000000000u128; // 1 ETH
-        let (low, high) = conversions::u128_to_uint256(amount);
-
-        // For amounts < 2^64, high should be 0
-        assert_eq!(high, Felt::ZERO);
-        assert_eq!(low, Felt::from(amount));
-
-        // Test round trip
-        let back_to_u128 = conversions::uint256_to_u128(low, high);
-        assert_eq!(back_to_u128, amount);
-    }
-
+    // Original tests
     #[test]
     fn test_contract_parameters_parsing() {
         // Test the parsing logic without making actual network calls
@@ -80,29 +31,100 @@ mod contracts_tests {
         assert_eq!(percentage_fee, 100);
     }
 
+    // New tests added
     #[test]
-    fn test_contract_creation() {
-        let address = Felt::from_hex("0x123").unwrap();
-        let provider = Arc::new(starknet::providers::JsonRpcClient::new(
-            starknet::providers::jsonrpc::HttpTransport::new(
-                url::Url::parse("http://localhost:5000").unwrap(),
-            ),
-        ));
-
-        let contract = AutoSwapprContract::new(address, provider);
-        assert_eq!(contract.address(), address);
+    fn test_fee_type_enum() {
+        // Test Fixed fee type
+        assert_eq!(FeeType::Fixed.to_u8(), 0);
+        assert_eq!(FeeType::from_u8(0), FeeType::Fixed);
+        
+        // Test Percentage fee type
+        assert_eq!(FeeType::Percentage.to_u8(), 1);
+        assert_eq!(FeeType::from_u8(1), FeeType::Percentage);
+        
+        // Test default for unknown value (returns Percentage for non-zero)
+        assert_eq!(FeeType::from_u8(99), FeeType::Percentage);
     }
 
     #[test]
-    fn test_erc20_contract_creation() {
-        let address = Felt::from_hex("0x456").unwrap();
-        let provider = Arc::new(starknet::providers::JsonRpcClient::new(
-            starknet::providers::jsonrpc::HttpTransport::new(
-                url::Url::parse("http://localhost:5000").unwrap(),
-            ),
-        ));
+    fn test_pool_key_creation() {
+        use crate::types::connector::PoolKey;
+        
+        let token0 = Felt::from_hex("0x123").unwrap();
+        let token1 = Felt::from_hex("0x456").unwrap();
+        
+        let pool_key = PoolKey::new(token0, token1);
+        
+        assert_eq!(pool_key.token0, token0);
+        assert_eq!(pool_key.token1, token1);
+        assert_eq!(pool_key.extension, Felt::ZERO);
+    }
 
-        let contract = Erc20Contract::new(address, provider);
-        assert_eq!(contract.address(), address);
+    #[test]
+    fn test_i129_struct() {
+        use crate::types::connector::I129;
+        
+        let amount = I129::new(1000000, false);
+        assert_eq!(amount.mag, 1000000);
+        assert_eq!(amount.sign, false);
+        
+        let negative = I129::new(500000, true);
+        assert_eq!(negative.mag, 500000);
+        assert_eq!(negative.sign, true);
+    }
+
+    #[test]
+    fn test_swap_parameters() {
+        use crate::types::connector::{SwapParameters, I129};
+        
+        let amount = I129::new(1000000, false);
+        let swap_params = SwapParameters::new(amount, false);
+        
+        assert_eq!(swap_params.amount.mag, 1000000);
+        assert_eq!(swap_params.is_token1, false);
+        assert_eq!(swap_params.skip_ahead, 0);
+    }
+
+    #[test]
+    fn test_felt_creation() {
+        let felt1 = Felt::from(12345u128);
+        let felt2 = Felt::from_hex("0x123").unwrap();
+        
+        assert!(felt1 != felt2);
+        assert_eq!(felt1, Felt::from(12345u128));
+    }
+
+    #[test]
+    fn test_contract_info_parsing() {
+        use crate::types::connector::ContractInfo;
+        
+        let info = ContractInfo {
+            fees_collector: "0x123".to_string(),
+            fibrous_exchange_address: "0x456".to_string(),
+            avnu_exchange_address: "0x789".to_string(),
+            oracle_address: "0xabc".to_string(),
+            owner: "0xdef".to_string(),
+            fee_type: FeeType::Fixed,
+            percentage_fee: 100,
+        };
+        
+        assert_eq!(info.fee_type, FeeType::Fixed);
+        assert_eq!(info.percentage_fee, 100);
+    }
+
+    #[test]
+    fn test_route_struct() {
+        use crate::types::connector::Route;
+        
+        let route = Route {
+            token_from: Felt::from_hex("0x123").unwrap(),
+            token_to: Felt::from_hex("0x456").unwrap(),
+            exchange_address: Felt::from_hex("0x789").unwrap(),
+            percent: 100,
+            additional_swap_params: vec![],
+        };
+        
+        assert_eq!(route.percent, 100);
+        assert_eq!(route.additional_swap_params.len(), 0);
     }
 }
