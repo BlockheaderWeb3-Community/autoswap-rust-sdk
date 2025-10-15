@@ -9,3 +9,7 @@ pub use types::connector::{
 };
 
 pub use constant::{ETH, STRK, TokenAddress, TokenInfo, USDC, USDT, WBTC};
+
+#[cfg(test)]
+#[path = "contracts_test.rs"]
+mod contracts_tests;
