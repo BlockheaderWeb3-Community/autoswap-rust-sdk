@@ -150,7 +150,6 @@ impl AutoSwappr {
         swap_data.encode(&mut serialized).unwrap();
 
         if allowance >= actual_amount {
-            println!("allowance set");
             let swap_call = Call {
                 to: self.contract_address,
                 selector: selector!("ekubo_manual_swap"),
@@ -169,7 +168,6 @@ impl AutoSwappr {
                 })),
             }
         } else {
-            println!("allowance not set");
             let approve_call = Call {
                 to: token0,
                 selector: selector!("approve"),
