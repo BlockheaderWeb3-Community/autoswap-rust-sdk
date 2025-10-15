@@ -3,10 +3,10 @@ use starknet::{
     core::{
         chain_id,
         codec::Encode,
-        types::{BlockId, BlockTag, Call, Felt},
+        types::{BlockId, BlockTag, Call, Felt, FunctionCall},
     },
     macros::selector,
-    providers::{JsonRpcClient, Url, jsonrpc::HttpTransport},
+    providers::{JsonRpcClient, Provider, Url, jsonrpc::HttpTransport},
     signers::{LocalWallet, SigningKey},
 };
 
@@ -126,6 +126,12 @@ impl AutoSwappr {
                 message: "SWAP AMOUNT IS ZERO".to_string(),
             }));
         }
+
+        let allowance = self
+            .get_allowance(&self.account_address, token0)
+            .await
+            .unwrap();
+
         let token_decimal = TokenAddress::new()
             .get_token_info_by_address(token0)
             .unwrap()
@@ -143,33 +149,81 @@ impl AutoSwappr {
         let mut serialized = vec![];
         swap_data.encode(&mut serialized).unwrap();
 
-        let approve_call = Call {
-            to: token0,
-            selector: selector!("approve"),
-            calldata: vec![self.contract_address, amount_low, amount_high],
-        };
+        if allowance >= actual_amount {
+            println!("allowance set");
+            let swap_call = Call {
+                to: self.contract_address,
+                selector: selector!("ekubo_manual_swap"),
+                calldata: serialized,
+            };
 
-        let swap_call = Call {
-            to: self.contract_address,
-            selector: selector!("ekubo_manual_swap"),
-            calldata: serialized,
-        };
+            let result = self.account.execute_v3(vec![swap_call]).send().await;
+            match result {
+                Ok(x) => Ok(Json(SuccessResponse {
+                    success: true,
+                    tx_hash: x.transaction_hash,
+                })),
+                Err(_) => Err(Json(ErrorResponse {
+                    success: false,
+                    message: "FAILED TO SWAP".to_string(),
+                })),
+            }
+        } else {
+            println!("allowance not set");
+            let approve_call = Call {
+                to: token0,
+                selector: selector!("approve"),
+                calldata: vec![self.contract_address, amount_low, amount_high],
+            };
 
-        let result = self
-            .account
-            .execute_v3(vec![approve_call, swap_call])
-            .send()
-            .await;
-        match result {
-            Ok(x) => Ok(Json(SuccessResponse {
-                success: true,
-                tx_hash: x.transaction_hash,
-            })),
-            Err(_) => Err(Json(ErrorResponse {
-                success: false,
-                message: "FAILED TO SWAP".to_string(),
-            })),
+            let swap_call = Call {
+                to: self.contract_address,
+                selector: selector!("ekubo_manual_swap"),
+                calldata: serialized,
+            };
+
+            let result = self
+                .account
+                .execute_v3(vec![approve_call, swap_call])
+                .send()
+                .await;
+            match result {
+                Ok(x) => Ok(Json(SuccessResponse {
+                    success: true,
+                    tx_hash: x.transaction_hash,
+                })),
+                Err(_) => Err(Json(ErrorResponse {
+                    success: false,
+                    message: "FAILED TO SWAP".to_string(),
+                })),
+            }
         }
+    }
+
+    async fn get_allowance(&self, owner: &str, token: Felt) -> Result<u128, String> {
+        let provider = JsonRpcClient::new(HttpTransport::new(Url::parse(&self.rpc_url).unwrap()));
+
+        let owner = Felt::from_hex(owner).expect("OWNER ADDRESS NOT PROVIDED");
+        let spender = self.contract_address;
+
+        let allowance = provider
+            .call(
+                FunctionCall {
+                    contract_address: token,
+                    entry_point_selector: selector!("allowance"),
+                    calldata: vec![owner, spender],
+                },
+                BlockId::Tag(BlockTag::Latest),
+            )
+            .await
+            .map_err(|e| e.to_string())?;
+
+        let allowance = allowance[0]
+            .to_string()
+            .trim()
+            .parse::<u128>()
+            .map_err(|e| e.to_string())?;
+        Ok(allowance)
     }
 
     // pub async fn  ekubo_auto_swap(){
