@@ -1,5 +1,5 @@
 [package]
-name = "autoswap-rust-sdk"
+name = "autoswap-rs"
 license = "MIT"
 authors = ["BlockheaderWeb3 <Dev@blockheaderweb3.org>"]
 description = "AutoSwappr library in Rust"
