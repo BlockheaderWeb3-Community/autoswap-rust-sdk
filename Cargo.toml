@@ -1,7 +1,7 @@
 [package]
 name = "autoswap-rust-sdk"
 license = "MIT"
-authors = [""]
+authors = ["BlockheaderWeb3 <Dev@blockheaderweb3.org>"]
 description = "AutoSwappr library in Rust"
 repository = "https://github.com/BlockheaderWeb3-Community/autoswap-rust-sdk"
 keywords = [
@@ -13,7 +13,7 @@ keywords = [
     "autoswappr",
     "swap"
 ]
-documentation = ""
+documentation = "https://github.com/BlockheaderWeb3-Community/autoswap-rust-sdk"
 exclude = [".github/**", "examples/",]
 version = "0.1.0"
 edition = "2024"
